@@ -1,0 +1,88 @@
+---
+- name: Windows Server Pre-Patch Checks
+  hosts: Win_Server
+  gather_facts: true
+
+  tasks:
+
+    # ============================================================
+    # 1. WINRM CONNECTIVITY
+    # ============================================================
+
+    - name: Test WinRM connectivity
+      ansible.windows.win_ping:
+
+    # ============================================================
+    # 2. WINDOWS VERSION
+    # ============================================================
+
+    - name: Check Windows version
+      ansible.windows.win_shell: |
+        $os = Get-CimInstance Win32_OperatingSystem
+
+        Write-Output "OS: $($os.Caption)"
+        Write-Output "Version: $($os.Version)"
+        Write-Output "Build: $($os.BuildNumber)"
+      register: windows_version
+      changed_when: false
+
+    # ============================================================
+    # 3. LAST BOOT TIME
+    # ============================================================
+
+    - name: Check Windows last boot time
+      ansible.windows.win_shell: |
+        (Get-CimInstance Win32_OperatingSystem).LastBootUpTime
+      register: last_boot
+      changed_when: false
+
+    # ============================================================
+    # 4. C DRIVE FREE SPACE
+    # ============================================================
+
+    - name: Check C drive free space
+      ansible.windows.win_shell: |
+        $drive = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'"
+
+        $freeGB = [math]::Round($drive.FreeSpace / 1GB, 2)
+
+        Write-Output $freeGB
+      register: free_space
+      changed_when: false
+
+    - name: Fail if C drive has less than 10 GB free
+      ansible.builtin.fail:
+        msg: >-
+          Pre-check failed.
+          C drive has only {{ free_space.stdout | trim }} GB free.
+          Minimum required free space is 10 GB.
+      when: (free_space.stdout | trim | float) < 10
+
+    # ============================================================
+    # 5. WINDOWS UPDATE SERVICE
+    # ============================================================
+
+    - name: Check Windows Update service
+      ansible.windows.win_service:
+        name: wuauserv
+      register: windows_update_service
+
+    # ============================================================
+    # 6. DISPLAY PRE-CHECK RESULTS
+    # ============================================================
+
+    - name: Display pre-check results
+      ansible.builtin.debug:
+        msg:
+          - "=========================================="
+          - "WINDOWS PRE-PATCH CHECK"
+          - "=========================================="
+          - "Hostname: {{ ansible_hostname }}"
+          - "Windows Version:"
+          - "{{ windows_version.stdout | trim }}"
+          - "Last Boot Time: {{ last_boot.stdout | trim }}"
+          - "C Drive Free Space: {{ free_space.stdout | trim }} GB"
+          - "Windows Update Service: {{ windows_update_service.state }}"
+          - "=========================================="
+          - "PRE-CHECK PASSED"
+          - "=========================================="
