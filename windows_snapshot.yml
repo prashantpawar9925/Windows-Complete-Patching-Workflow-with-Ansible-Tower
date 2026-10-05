@@ -1,0 +1,88 @@
+---
+- name: Create Windows EBS Snapshot Automatically
+  hosts: Win_Server
+  gather_facts: false
+
+  tasks:
+
+    # ============================================================
+    # 1. FIND EC2 INSTANCE
+    # ============================================================
+
+    - name: Find EC2 instance using Windows server private IP
+      amazon.aws.ec2_instance_info:
+        region: ap-south-1
+        filters:
+          private-ip-address: "{{ ansible_host }}"
+      delegate_to: localhost
+      register: ec2_instance_info
+
+    - name: Fail if EC2 instance was not found
+      ansible.builtin.fail:
+        msg: "Could not find EC2 instance with private IP {{ ansible_host }}"
+      when: ec2_instance_info.instances | length == 0
+
+    - name: Display EC2 instance information
+      ansible.builtin.debug:
+        msg:
+          - "Windows Server IP: {{ ansible_host }}"
+          - "EC2 Instance ID: {{ ec2_instance_info.instances[0].instance_id }}"
+
+    # ============================================================
+    # 2. FIND ROOT EBS VOLUME
+    # ============================================================
+
+    - name: Find root EBS volume
+      ansible.builtin.set_fact:
+        root_volume_id: >-
+          {{
+            (
+              ec2_instance_info.instances[0].block_device_mappings
+              | selectattr('device_name', 'equalto', ec2_instance_info.instances[0].root_device_name)
+              | map(attribute='ebs.volume_id')
+              | first
+            )
+          }}
+
+    - name: Fail if root EBS volume was not found
+      ansible.builtin.fail:
+        msg: "Could not determine root EBS volume for {{ ansible_host }}"
+      when: root_volume_id is not defined or root_volume_id | length == 0
+
+    - name: Display root EBS volume
+      ansible.builtin.debug:
+        msg:
+          - "Root Device: {{ ec2_instance_info.instances[0].root_device_name }}"
+          - "Volume ID: {{ root_volume_id }}"
+
+    # ============================================================
+    # 3. CREATE SNAPSHOT
+    # ============================================================
+
+    - name: Create Windows EBS snapshot
+      amazon.aws.ec2_snapshot:
+        volume_id: "{{ root_volume_id }}"
+        region: ap-south-1
+        description: "Pre-patch snapshot - Windows Server - {{ ansible_host }}"
+        wait: true
+        wait_timeout: 3600
+        tags:
+          Name: "AWX-Windows-PrePatch"
+          PatchWorkflow: "Windows-Patching"
+          ServerIP: "{{ ansible_host }}"
+      delegate_to: localhost
+      register: snapshot_result
+
+    # ============================================================
+    # 4. DISPLAY SNAPSHOT INFORMATION
+    # ============================================================
+
+    - name: Display snapshot information
+      ansible.builtin.debug:
+        msg:
+          - "Windows Server IP: {{ ansible_host }}"
+          - "EC2 Instance ID: {{ ec2_instance_info.instances[0].instance_id }}"
+          - "EBS Volume ID: {{ root_volume_id }}"
+          - "Snapshot ID: {{ snapshot_result.snapshot_id }}"
+          - "Snapshot State: {{ snapshot_result.state | default('unknown') }}"
+          - "Snapshot created successfully"
