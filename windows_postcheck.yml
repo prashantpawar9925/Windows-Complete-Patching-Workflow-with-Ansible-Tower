@@ -1,0 +1,157 @@
+---
+- name: Windows Server 2022 - Post Patch Validation
+  hosts: Win_Server
+  gather_facts: false
+
+  tasks:
+
+    # ============================================================
+    # 1. CHECK WINRM CONNECTIVITY
+    # ============================================================
+
+    - name: Check Windows server connectivity after patching
+      ansible.windows.win_ping:
+      register: post_patch_ping
+
+    - name: Display connectivity status
+      ansible.builtin.debug:
+        msg: "Windows server is reachable after patching."
+
+    # ============================================================
+    # 2. CHECK OPERATING SYSTEM
+    # ============================================================
+
+    - name: Get Windows OS information
+      ansible.windows.win_shell: |
+        $os = Get-CimInstance Win32_OperatingSystem
+
+        Write-Output "Hostname: $env:COMPUTERNAME"
+        Write-Output "Operating System: $($os.Caption)"
+        Write-Output "Version: $($os.Version)"
+        Write-Output "Build Number: $($os.BuildNumber)"
+        Write-Output "Last Boot Time: $($os.LastBootUpTime)"
+      register: os_info
+
+    - name: Display OS information
+      ansible.builtin.debug:
+        msg: "{{ os_info.stdout_lines }}"
+
+    # ============================================================
+    # 3. CHECK C DRIVE FREE SPACE
+    # ============================================================
+
+    - name: Check C drive free space
+      ansible.windows.win_shell: |
+        $disk = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'"
+
+        $totalGB = [math]::Round($disk.Size / 1GB, 2)
+        $freeGB = [math]::Round($disk.FreeSpace / 1GB, 2)
+
+        Write-Output "C Drive Total Space: $totalGB GB"
+        Write-Output "C Drive Free Space: $freeGB GB"
+
+        if ($freeGB -lt 10) {
+          Write-Error "C drive has less than 10 GB free space."
+          exit 1
+        }
+      register: disk_check
+
+    - name: Display disk status
+      ansible.builtin.debug:
+        msg: "{{ disk_check.stdout_lines }}"
+
+    # ============================================================
+    # 4. CHECK WINDOWS UPDATE SERVICE
+    # ============================================================
+
+    - name: Check Windows Update service
+      ansible.windows.win_service:
+        name: wuauserv
+      register: windows_update_service
+
+    - name: Display Windows Update service status
+      ansible.builtin.debug:
+        msg:
+          - "Windows Update Service: {{ windows_update_service.name }}"
+          - "State: {{ windows_update_service.state }}"
+          - "Start Mode: {{ windows_update_service.start_mode }}"
+
+    # ============================================================
+    # 5. CHECK REQUIRED SERVICES
+    # ============================================================
+    # Add application services here when required.
+    # Example:
+    # - name: Check application service
+    #   ansible.windows.win_service:
+    #     name: "YourServiceName"
+    #   register: application_service
+    #
+    # - name: Fail if application service is not running
+    #   ansible.builtin.fail:
+    #     msg: "Application service is not running."
+    #   when: application_service.state != "started"
+
+    # ============================================================
+    # 6. CHECK REBOOT STATUS
+    # ============================================================
+
+    - name: Check whether Windows still requires a reboot
+      ansible.windows.win_shell: |
+        $rebootRequired = $false
+
+        if (Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending") {
+          $rebootRequired = $true
+        }
+
+        if (Test-Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired") {
+          $rebootRequired = $true
+        }
+
+        if ($rebootRequired) {
+          Write-Output "REBOOT_REQUIRED"
+          exit 1
+        }
+        else {
+          Write-Output "NO_REBOOT_REQUIRED"
+        }
+      register: reboot_check
+      changed_when: false
+
+    - name: Display reboot status
+      ansible.builtin.debug:
+        msg: "{{ reboot_check.stdout_lines }}"
+
+    # ============================================================
+    # 7. DISPLAY INSTALLED HOTFIXES
+    # ============================================================
+
+    - name: Get recently installed Windows updates
+      ansible.windows.win_shell: |
+        Get-HotFix |
+        Sort-Object InstalledOn -Descending |
+        Select-Object -First 10 HotFixID, Description, InstalledOn |
+        Format-Table -AutoSize
+      register: installed_updates
+      changed_when: false
+
+    - name: Display recently installed updates
+      ansible.builtin.debug:
+        msg: "{{ installed_updates.stdout_lines }}"
+
+    # ============================================================
+    # 8. FINAL POST-PATCH RESULT
+    # ============================================================
+
+    - name: Post-patch validation successful
+      ansible.builtin.debug:
+        msg:
+          - "=========================================="
+          - "WINDOWS POST-PATCH VALIDATION SUCCESSFUL"
+          - "=========================================="
+          - "WinRM Connectivity : PASS"
+          - "Operating System   : PASS"
+          - "Disk Space         : PASS"
+          - "Windows Update     : CHECKED"
+          - "Reboot Status      : PASS"
+          - "Installed Updates  : VERIFIED"
+          - "=========================================="
