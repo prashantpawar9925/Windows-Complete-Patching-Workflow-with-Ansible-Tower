@@ -1,0 +1,68 @@
+---
+- name: Install Windows Server 2022 Cumulative Update KB5129237
+  hosts: Win_Server
+  gather_facts: false
+
+  vars:
+    target_kb: "KB5129237"
+
+  tasks:
+
+    - name: Check if target cumulative update is already installed
+      ansible.windows.win_shell: |
+        $kb = Get-HotFix -Id "{{ target_kb }}" -ErrorAction SilentlyContinue
+
+        if ($kb) {
+          Write-Output "INSTALLED"
+          Write-Output "KB: $($kb.HotFixID)"
+          Write-Output "Installed On: $($kb.InstalledOn)"
+        }
+        else {
+          Write-Output "NOT_INSTALLED"
+        }
+      register: kb_status
+      changed_when: false
+
+    - name: Display current KB status
+      ansible.builtin.debug:
+        msg: "{{ kb_status.stdout_lines }}"
+
+    - name: Install KB5129237 only
+      ansible.windows.win_updates:
+        category_names:
+          - SecurityUpdates
+        accept_list:
+          - "{{ target_kb }}"
+        state: installed
+        reboot: true
+        reboot_timeout: 3600
+      register: windows_update_result
+      when: "'NOT_INSTALLED' in kb_status.stdout"
+
+    - name: Display Windows Update result
+      ansible.builtin.debug:
+        msg:
+          - "Updates found: {{ windows_update_result.found_update_count | default(0) }}"
+          - "Updates installed: {{ windows_update_result.installed_update_count | default(0) }}"
+          - "Reboot required: {{ windows_update_result.reboot_required | default(false) }}"
+          - "Server rebooted: {{ windows_update_result.rebooted | default(false) }}"
+
+    - name: Verify KB5129237
+      ansible.windows.win_shell: |
+        $kb = Get-HotFix -Id "{{ target_kb }}" -ErrorAction SilentlyContinue
+
+        if ($kb) {
+          Write-Output "SUCCESS"
+          Write-Output "KB: $($kb.HotFixID)"
+          Write-Output "Installed On: $($kb.InstalledOn)"
+        }
+        else {
+          Write-Output "FAILED - {{ target_kb }} is not installed"
+          exit 1
+        }
+      register: kb_verify
+      changed_when: false
+
+    - name: Display final KB status
+      ansible.builtin.debug:
+        msg: "{{ kb_verify.stdout_lines }}"
