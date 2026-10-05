@@ -1,0 +1,84 @@
+---
+- name: Verify Windows EBS Snapshot Automatically
+  hosts: Win_Server
+  gather_facts: false
+
+  tasks:
+
+    # ============================================================
+    # 1. FIND LATEST PRE-PATCH SNAPSHOT
+    # ============================================================
+
+    - name: Find Windows pre-patch snapshots
+      amazon.aws.ec2_snapshot_info:
+        region: ap-south-1
+        filters:
+          "tag:PatchWorkflow": "Windows-Patching"
+          "tag:ServerIP": "{{ ansible_host }}"
+      delegate_to: localhost
+      register: snapshot_info
+
+    # ============================================================
+    # 2. CHECK SNAPSHOT EXISTS
+    # ============================================================
+
+    - name: Fail if no snapshot was found
+      ansible.builtin.fail:
+        msg: >-
+          No Windows pre-patch snapshot was found for server
+          {{ ansible_host }}.
+      when: snapshot_info.snapshots | length == 0
+
+    # ============================================================
+    # 3. SELECT LATEST SNAPSHOT
+    # ============================================================
+
+    - name: Select latest snapshot
+      ansible.builtin.set_fact:
+        latest_snapshot: >-
+          {{
+            snapshot_info.snapshots
+            | sort(attribute='start_time', reverse=true)
+            | first
+          }}
+
+    # ============================================================
+    # 4. DISPLAY SNAPSHOT INFORMATION
+    # ============================================================
+
+    - name: Display snapshot status
+      ansible.builtin.debug:
+        msg:
+          - "Windows Server IP: {{ ansible_host }}"
+          - "Snapshot ID: {{ latest_snapshot.snapshot_id }}"
+          - "Snapshot State: {{ latest_snapshot.state }}"
+          - "Snapshot Description: {{ latest_snapshot.description }}"
+          - "Snapshot Start Time: {{ latest_snapshot.start_time }}"
+
+    # ============================================================
+    # 5. VERIFY SNAPSHOT
+    # ============================================================
+
+    - name: Fail if snapshot is not completed
+      ansible.builtin.fail:
+        msg: >-
+          Snapshot verification failed.
+          Snapshot ID: {{ latest_snapshot.snapshot_id }}
+          Current state: {{ latest_snapshot.state }}
+      when: latest_snapshot.state != "completed"
+
+    # ============================================================
+    # 6. SUCCESS
+    # ============================================================
+
+    - name: Snapshot verification successful
+      ansible.builtin.debug:
+        msg:
+          - "=========================================="
+          - "SNAPSHOT VERIFICATION SUCCESSFUL"
+          - "=========================================="
+          - "Server: {{ ansible_host }}"
+          - "Snapshot ID: {{ latest_snapshot.snapshot_id }}"
+          - "State: {{ latest_snapshot.state }}"
+          - "Snapshot is ready for Windows patching."
+          - "=========================================="
