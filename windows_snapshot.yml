@@ -66,7 +66,7 @@
         description: "Pre-patch snapshot - Windows Server - {{ ansible_host }}"
         wait: true
         wait_timeout: 3600
-        tags:
+        snapshot_tags:
           Name: "AWX-Windows-PrePatch"
           PatchWorkflow: "Windows-Patching"
           ServerIP: "{{ ansible_host }}"
