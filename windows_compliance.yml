@@ -1,0 +1,430 @@
+
+---
+- name: Generate Windows Server 2022 Patch Compliance Report
+  hosts: Win_Server
+  gather_facts: false
+
+  vars:
+    target_kb: "KB5129237"
+    minimum_disk_gb: 10
+
+  tasks:
+
+    # ============================================================
+    # 1. SERVER INFORMATION
+    # ============================================================
+
+    - name: Record compliance report start time
+      ansible.builtin.set_fact:
+        compliance_report_start: "{{ now(utc=false, fmt='%Y-%m-%d %H:%M:%S') }}"
+
+    - name: Get Windows server information
+      ansible.windows.win_shell: |
+        $os = Get-CimInstance Win32_OperatingSystem
+        $cs = Get-CimInstance Win32_ComputerSystem
+
+        Write-Output "HOSTNAME=$($env:COMPUTERNAME)"
+        Write-Output "OS=$($os.Caption)"
+        Write-Output "VERSION=$($os.Version)"
+        Write-Output "BUILD=$($os.BuildNumber)"
+        Write-Output "LAST_BOOT=$($os.LastBootUpTime)"
+        Write-Output "MANUFACTURER=$($cs.Manufacturer)"
+      register: server_info
+      changed_when: false
+
+    - name: Get server IP address
+      ansible.windows.win_shell: |
+        $ip = Get-NetIPAddress -AddressFamily IPv4 |
+          Where-Object {
+            $_.IPAddress -notlike '127.*' -and
+            $_.InterfaceAlias -notlike '*Loopback*'
+          } |
+          Select-Object -First 1 -ExpandProperty IPAddress
+        Write-Output $ip
+      register: server_ip
+      changed_when: false
+
+    - name: Get OS build and server details
+      ansible.builtin.set_fact:
+        server_name: >-
+          {{
+            (server_info.stdout_lines
+            | select('match', '^HOSTNAME=')
+            | first
+            | default('HOSTNAME=UNKNOWN')).split('=', 1)[1]
+          }}
+        operating_system: >-
+          {{
+            (server_info.stdout_lines
+            | select('match', '^OS=')
+            | first
+            | default('OS=UNKNOWN')).split('=', 1)[1]
+          }}
+        os_version: >-
+          {{
+            (server_info.stdout_lines
+            | select('match', '^VERSION=')
+            | first
+            | default('VERSION=UNKNOWN')).split('=', 1)[1]
+          }}
+        os_build: >-
+          {{
+            (server_info.stdout_lines
+            | select('match', '^BUILD=')
+            | first
+            | default('BUILD=UNKNOWN')).split('=', 1)[1]
+          }}
+        last_boot_time: >-
+          {{
+            (server_info.stdout_lines
+            | select('match', '^LAST_BOOT=')
+            | first
+            | default('LAST_BOOT=UNKNOWN')).split('=', 1)[1]
+          }}
+
+    # ============================================================
+    # 2. DISK VALIDATION
+    # ============================================================
+
+    - name: Check C drive capacity
+      ansible.windows.win_shell: |
+        $disk = Get-CimInstance Win32_LogicalDisk `
+          -Filter "DeviceID='C:'"
+
+        Write-Output "TOTAL_GB=$([math]::Round($disk.Size / 1GB, 2))"
+        Write-Output "FREE_GB=$([math]::Round($disk.FreeSpace / 1GB, 2))"
+      register: disk_info
+      changed_when: false
+
+    - name: Set disk information
+      ansible.builtin.set_fact:
+        disk_total_gb: >-
+          {{
+            (disk_info.stdout_lines
+            | select('match', '^TOTAL_GB=')
+            | first
+            | default('TOTAL_GB=0')).split('=', 1)[1] | float
+          }}
+        disk_free_gb: >-
+          {{
+            (disk_info.stdout_lines
+            | select('match', '^FREE_GB=')
+            | first
+            | default('FREE_GB=0')).split('=', 1)[1] | float
+          }}
+
+    - name: Determine disk status
+      ansible.builtin.set_fact:
+        disk_status: >-
+          {{
+            'PASS'
+            if disk_free_gb >= minimum_disk_gb
+            else 'FAIL'
+          }}
+
+    # ============================================================
+    # 3. WINRM CONNECTIVITY VALIDATION
+    # ============================================================
+
+    - name: Validate Windows server connectivity
+      ansible.windows.win_ping:
+      register: connectivity_check
+
+    - name: Determine connectivity status
+      ansible.builtin.set_fact:
+        connectivity_status: >-
+          {{
+            'PASS'
+            if connectivity_check.ping == 'pong'
+            else 'FAIL'
+          }}
+
+    # ============================================================
+    # 4. WINDOWS UPDATE SERVICE
+    # ============================================================
+
+    - name: Check Windows Update service
+      ansible.windows.win_service:
+        name: wuauserv
+      register: windows_update_service
+
+    - name: Set Windows Update service information
+      ansible.builtin.set_fact:
+        windows_update_service_state: >-
+          {{ windows_update_service.state | default('UNKNOWN') }}
+        windows_update_service_start_mode: >-
+          {{ windows_update_service.start_mode | default('UNKNOWN') }}
+
+    # ============================================================
+    # 5. REBOOT VALIDATION
+    # ============================================================
+
+    - name: Check Windows reboot requirement
+      ansible.windows.win_shell: |
+        $pending = $false
+
+        if (Test-Path `
+          "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending") {
+          $pending = $true
+        }
+
+        if (Test-Path `
+          "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired") {
+          $pending = $true
+        }
+
+        $sessionManager = Get-ItemProperty `
+          "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" `
+          -Name PendingFileRenameOperations `
+          -ErrorAction SilentlyContinue
+
+        if ($sessionManager.PendingFileRenameOperations) {
+          $pending = $true
+        }
+
+        if ($pending) {
+          Write-Output "REBOOT_REQUIRED"
+        }
+        else {
+          Write-Output "NO_REBOOT_REQUIRED"
+        }
+      register: reboot_check
+      changed_when: false
+
+    - name: Determine reboot status
+      ansible.builtin.set_fact:
+        reboot_pending: >-
+          {{
+            'REBOOT_REQUIRED' in reboot_check.stdout
+          }}
+        reboot_status: >-
+          {{
+            'PASS'
+            if 'NO_REBOOT_REQUIRED' in reboot_check.stdout
+            else 'FAIL'
+          }}
+
+    # ============================================================
+    # 6. PATCH INFORMATION
+    # ============================================================
+
+    - name: Check target KB installation status
+      ansible.windows.win_shell: |
+        $kb = Get-HotFix -Id "{{ target_kb }}" `
+          -ErrorAction SilentlyContinue
+
+        if ($kb) {
+          Write-Output "KB_STATUS=INSTALLED"
+          Write-Output "KB_ID=$($kb.HotFixID)"
+          Write-Output "KB_DESCRIPTION=$($kb.Description)"
+          Write-Output "KB_INSTALLED_ON=$($kb.InstalledOn)"
+        }
+        else {
+          Write-Output "KB_STATUS=NOT_FOUND"
+          Write-Output "KB_ID={{ target_kb }}"
+          Write-Output "KB_DESCRIPTION=Not returned by Get-HotFix"
+          Write-Output "KB_INSTALLED_ON=UNKNOWN"
+        }
+      register: kb_info
+      changed_when: false
+
+    - name: Set target KB information
+      ansible.builtin.set_fact:
+        target_kb_installed: >-
+          {{
+            'INSTALLED'
+            if 'KB_STATUS=INSTALLED' in kb_info.stdout_lines
+            else 'NOT_FOUND'
+          }}
+        target_kb_installed_on: >-
+          {{
+            (kb_info.stdout_lines
+            | select('match', '^KB_INSTALLED_ON=')
+            | first
+            | default('KB_INSTALLED_ON=UNKNOWN')).split('=', 1)[1]
+          }}
+
+    - name: Determine patch verification status
+      ansible.builtin.set_fact:
+        patch_verification_status: >-
+          {{
+            'PASS'
+            if target_kb_installed == 'INSTALLED'
+            else 'FAIL'
+          }}
+
+    # ============================================================
+    # 7. RECENTLY INSTALLED HOTFIXES
+    # ============================================================
+
+    - name: Retrieve recent installed hotfixes
+      ansible.windows.win_shell: |
+        Get-HotFix |
+          Sort-Object InstalledOn -Descending |
+          Select-Object -First 10 HotFixID, Description, InstalledOn |
+          ConvertTo-Json -Compress
+      register: recent_hotfixes
+      changed_when: false
+
+    # ============================================================
+    # 8. BACKUP / EBS SNAPSHOT VALIDATION
+    # ============================================================
+
+    - name: Set snapshot information from workflow
+      ansible.builtin.set_fact:
+        compliance_snapshot_id: >-
+          {{ snapshot_id | default('NOT_AVAILABLE') }}
+        compliance_snapshot_state: >-
+          {{ snapshot_state | default('NOT_AVAILABLE') }}
+        compliance_snapshot_status: >-
+          {{ snapshot_status | default('NOT_AVAILABLE') }}
+
+    - name: Determine snapshot validation status
+      ansible.builtin.set_fact:
+        final_snapshot_status: >-
+          {{
+            'PASS'
+            if
+              compliance_snapshot_state == 'completed'
+              and compliance_snapshot_status in ['SUCCESS', 'PASS']
+            else 'FAIL'
+          }}
+
+    # ============================================================
+    # 9. OVERALL HEALTH AND COMPLIANCE
+    # ============================================================
+
+    - name: Determine overall health status
+      ansible.builtin.set_fact:
+        health_check_status: >-
+          {{
+            'PASS'
+            if
+              connectivity_status == 'PASS'
+              and disk_status == 'PASS'
+              and reboot_status == 'PASS'
+            else 'FAIL'
+          }}
+
+    - name: Determine overall compliance status
+      ansible.builtin.set_fact:
+        compliance_status: >-
+          {{
+            'COMPLIANT'
+            if
+              patch_verification_status == 'PASS'
+              and final_snapshot_status == 'PASS'
+              and health_check_status == 'PASS'
+            else 'NON-COMPLIANT'
+          }}
+
+    # ============================================================
+    # 10. RECORD REPORT TIME
+    # ============================================================
+
+    - name: Record compliance report end time
+      ansible.builtin.set_fact:
+        compliance_report_end: "{{ now(utc=false, fmt='%Y-%m-%d %H:%M:%S') }}"
+
+    # ============================================================
+    # 11. DISPLAY WINDOWS PATCH COMPLIANCE REPORT
+    # ============================================================
+
+    - name: Display Windows Server 2022 compliance report
+      ansible.builtin.debug:
+        msg:
+          - "================================================================"
+          - "           WINDOWS SERVER 2022 PATCH COMPLIANCE REPORT"
+          - "================================================================"
+          - ""
+          - "1. SERVER INFORMATION"
+          - "----------------------------------------------------------------"
+          - "Server Name          : {{ server_name }}"
+          - "Server IP            : {{ server_ip.stdout | trim }}"
+          - "Operating System     : {{ operating_system }}"
+          - "OS Version           : {{ os_version }}"
+          - "OS Build             : {{ os_build }}"
+          - "Last Boot Time       : {{ last_boot_time }}"
+          - "Report Start         : {{ compliance_report_start }}"
+          - "Report End           : {{ compliance_report_end }}"
+          - ""
+          - "2. DISK VALIDATION"
+          - "----------------------------------------------------------------"
+          - "C Drive Total        : {{ disk_total_gb }} GB"
+          - "C Drive Free         : {{ disk_free_gb }} GB"
+          - "Minimum Required     : {{ minimum_disk_gb }} GB"
+          - "Disk Status          : {{ disk_status }}"
+          - ""
+          - "3. CONNECTIVITY VALIDATION"
+          - "----------------------------------------------------------------"
+          - "WinRM Connectivity   : {{ connectivity_status }}"
+          - ""
+          - "4. WINDOWS UPDATE SERVICE"
+          - "----------------------------------------------------------------"
+          - "Service Name         : wuauserv"
+          - "Service State        : {{ windows_update_service_state }}"
+          - "Start Mode           : {{ windows_update_service_start_mode }}"
+          - ""
+          - "5. PATCH INFORMATION"
+          - "----------------------------------------------------------------"
+          - "Patch Policy         : Security Updates Only"
+          - "Patch Model          : Configured Target KB"
+          - "Target KB             : {{ target_kb }}"
+          - "Target KB Status     : {{ target_kb_installed }}"
+          - "Installed On         : {{ target_kb_installed_on }}"
+          - "Patch Verification   : {{ patch_verification_status }}"
+          - ""
+          - "6. RECENT HOTFIXES"
+          - "----------------------------------------------------------------"
+          - "{{ recent_hotfixes.stdout | default('No hotfix information returned.') }}"
+          - ""
+          - "7. BACKUP / EBS SNAPSHOT"
+          - "----------------------------------------------------------------"
+          - "Snapshot ID           : {{ compliance_snapshot_id }}"
+          - "Snapshot State        : {{ compliance_snapshot_state }}"
+          - "Snapshot Status       : {{ final_snapshot_status }}"
+          - ""
+          - "8. POST-PATCH VALIDATION"
+          - "----------------------------------------------------------------"
+          - "WinRM                 : {{ connectivity_status }}"
+          - "Disk Status           : {{ disk_status }}"
+          - "Windows Update Service: {{ windows_update_service_state }}"
+          - "Reboot Pending        : {{ reboot_pending }}"
+          - "Reboot Status         : {{ reboot_status }}"
+          - "Health Check          : {{ health_check_status }}"
+          - ""
+          - "9. COMPLIANCE SUMMARY"
+          - "----------------------------------------------------------------"
+          - "Target KB Verification: {{ patch_verification_status }}"
+          - "Snapshot              : {{ final_snapshot_status }}"
+          - "Health Check          : {{ health_check_status }}"
+          - ""
+          - "================================================================"
+          - "OVERALL COMPLIANCE    : {{ compliance_status }}"
+          - "================================================================"
+
+    # ============================================================
+    # 12. FAIL JOB IF NON-COMPLIANT
+    # ============================================================
+
+    - name: Fail job if Windows server is non-compliant
+      ansible.builtin.fail:
+        msg: >-
+          Windows patch compliance FAILED for {{ server_name }}.
+          Target KB: {{ target_kb }}.
+          Overall Compliance: {{ compliance_status }}.
+      when: compliance_status != 'COMPLIANT'
+
+    # ============================================================
+    # 13. SUCCESS MESSAGE
+    # ============================================================
+
+    - name: Compliance report completed successfully
+      ansible.builtin.debug:
+        msg:
+          - "WINDOWS PATCH COMPLIANCE: COMPLIANT"
+          - "Server               : {{ server_name }}"
+          - "Target KB            : {{ target_kb }}"
+          - "Target KB Status     : {{ target_kb_installed }}"
+          - "Snapshot Status      : {{ final_snapshot_status }}"
+          - "Health Check         : {{ health_check_status }}"
