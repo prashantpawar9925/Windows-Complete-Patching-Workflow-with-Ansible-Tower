@@ -1,4 +1,3 @@
-
 ---
 - name: Generate Windows Server 2022 Patch Compliance Report
   hosts: Win_Server
@@ -6,6 +5,7 @@
 
   vars:
     target_kb: "KB5129237"
+    target_update_type: "Monthly Cumulative Security Update"
     minimum_disk_gb: 10
 
   tasks:
@@ -40,11 +40,12 @@
             $_.InterfaceAlias -notlike '*Loopback*'
           } |
           Select-Object -First 1 -ExpandProperty IPAddress
+
         Write-Output $ip
       register: server_ip
       changed_when: false
 
-    - name: Get OS build and server details
+    - name: Set server information
       ansible.builtin.set_fact:
         server_name: >-
           {{
@@ -141,12 +142,15 @@
 
     # ============================================================
     # 4. WINDOWS UPDATE SERVICE
+    # Informational only; stopped service does not automatically fail
+    # compliance.
     # ============================================================
 
     - name: Check Windows Update service
       ansible.windows.win_service:
         name: wuauserv
       register: windows_update_service
+      changed_when: false
 
     - name: Set Windows Update service information
       ansible.builtin.set_fact:
@@ -197,46 +201,54 @@
             else 'PASS'
           }}
 
-
     # ============================================================
-    # 6. PATCH INFORMATION
+    # 6. TARGET CUMULATIVE SECURITY UPDATE
+    # Only the configured target KB is reported.
     # ============================================================
 
-    - name: Check target KB installation status
-      ansible.windows.win_shell: |
-        $kb = Get-HotFix -Id "{{ target_kb }}" `
-          -ErrorAction SilentlyContinue
+    - name: Check target cumulative update installation
+      ansible.windows.win_powershell:
+        script: |
+          $TargetKB = "{{ target_kb }}"
+          $Hotfix = Get-HotFix -Id $TargetKB -ErrorAction SilentlyContinue
 
-        if ($kb) {
-          Write-Output "KB_STATUS=INSTALLED"
-          Write-Output "KB_ID=$($kb.HotFixID)"
-          Write-Output "KB_DESCRIPTION=$($kb.Description)"
-          Write-Output "KB_INSTALLED_ON=$($kb.InstalledOn)"
-        }
-        else {
-          Write-Output "KB_STATUS=NOT_FOUND"
-          Write-Output "KB_ID={{ target_kb }}"
-          Write-Output "KB_DESCRIPTION=Not returned by Get-HotFix"
-          Write-Output "KB_INSTALLED_ON=UNKNOWN"
-        }
-      register: kb_info
+          if ($Hotfix) {
+              if ($Hotfix.InstalledOn) {
+                  $InstalledDate = $Hotfix.InstalledOn.ToString("MMM dd, yyyy")
+              }
+              else {
+                  $InstalledDate = "Date unavailable"
+              }
+
+              [PSCustomObject]@{
+                  KB          = $Hotfix.HotFixID
+                  InstalledOn = $InstalledDate
+                  Status      = "INSTALLED"
+              } | ConvertTo-Json -Compress
+          }
+          else {
+              [PSCustomObject]@{
+                  KB          = $TargetKB
+                  InstalledOn = "N/A"
+                  Status      = "NOT_INSTALLED"
+              } | ConvertTo-Json -Compress
+          }
+      register: target_update_result
       changed_when: false
 
-    - name: Set target KB information
+    - name: Parse target update information
+      ansible.builtin.set_fact:
+        target_update_details: >-
+          {{ target_update_result.output[0] | from_json }}
+
+    - name: Set target update compliance fields
       ansible.builtin.set_fact:
         target_kb_installed: >-
-          {{
-            'INSTALLED'
-            if 'KB_STATUS=INSTALLED' in kb_info.stdout_lines
-            else 'NOT_FOUND'
-          }}
+          {{ target_update_details.Status }}
         target_kb_installed_on: >-
-          {{
-            (kb_info.stdout_lines
-            | select('match', '^KB_INSTALLED_ON=')
-            | first
-            | default('KB_INSTALLED_ON=UNKNOWN')).split('=', 1)[1]
-          }}
+          {{ target_update_details.InstalledOn }}
+        target_kb_reported: >-
+          {{ target_update_details.KB }}
 
     - name: Determine patch verification status
       ansible.builtin.set_fact:
@@ -248,20 +260,7 @@
           }}
 
     # ============================================================
-    # 7. RECENTLY INSTALLED HOTFIXES
-    # ============================================================
-
-    - name: Retrieve recent installed hotfixes
-      ansible.windows.win_shell: |
-        Get-HotFix |
-          Sort-Object InstalledOn -Descending |
-          Select-Object -First 10 HotFixID, Description, InstalledOn |
-          ConvertTo-Json -Compress
-      register: recent_hotfixes
-      changed_when: false
-
-    # ============================================================
-    # 8. BACKUP / EBS SNAPSHOT VALIDATION
+    # 7. BACKUP / EBS SNAPSHOT VALIDATION
     # ============================================================
 
     - name: Find Windows pre-patch snapshots in AWS
@@ -295,7 +294,7 @@
           {{ compliance_latest_snapshot.state | default('NOT_AVAILABLE') | lower }}
         compliance_snapshot_status: >-
           {{
-            'SUCCESS'
+            'PASS'
             if (compliance_latest_snapshot.state | default('') | lower) == 'completed'
             else 'FAIL'
           }}
@@ -308,21 +307,12 @@
             if
               compliance_snapshot_id != 'NOT_AVAILABLE'
               and compliance_snapshot_state == 'completed'
-              and compliance_snapshot_status == 'SUCCESS'
+              and compliance_snapshot_status == 'PASS'
             else 'FAIL'
           }}
 
-    - name: Display snapshot validation inputs
-      ansible.builtin.debug:
-        msg:
-          - "Snapshot ID       : {{ compliance_snapshot_id }}"
-          - "Snapshot State    : {{ compliance_snapshot_state }}"
-          - "Snapshot Status   : {{ compliance_snapshot_status }}"
-          - "Validation Result : {{ final_snapshot_status }}"
-
-
     # ============================================================
-    # 9. OVERALL HEALTH AND COMPLIANCE
+    # 8. OVERALL HEALTH AND COMPLIANCE
     # ============================================================
 
     - name: Determine overall health status
@@ -350,7 +340,7 @@
           }}
 
     # ============================================================
-    # 10. RECORD REPORT TIME
+    # 9. RECORD REPORT TIME
     # ============================================================
 
     - name: Record compliance report end time
@@ -358,14 +348,14 @@
         compliance_report_end: "{{ now(utc=false, fmt='%Y-%m-%d %H:%M:%S') }}"
 
     # ============================================================
-    # 11. DISPLAY WINDOWS PATCH COMPLIANCE REPORT
+    # 10. DISPLAY WINDOWS PATCH COMPLIANCE REPORT
     # ============================================================
 
     - name: Display Windows Server 2022 compliance report
       ansible.builtin.debug:
         msg:
           - "================================================================"
-          - "           WINDOWS SERVER 2022 PATCH COMPLIANCE REPORT"
+          - "       WINDOWS SERVER 2022 PATCH COMPLIANCE REPORT"
           - "================================================================"
           - ""
           - "1. SERVER INFORMATION"
@@ -395,36 +385,33 @@
           - "Service Name         : wuauserv"
           - "Service State        : {{ windows_update_service_state }}"
           - "Start Mode           : {{ windows_update_service_start_mode }}"
+          - "Compliance Impact    : Informational"
           - ""
-          - "5. PATCH INFORMATION"
+          - "5. CUMULATIVE SECURITY UPDATE"
           - "----------------------------------------------------------------"
-          - "Patch Policy         : Security Updates Only"
-          - "Patch Model          : Configured Target KB"
-          - "Target KB             : {{ target_kb }}"
-          - "Target KB Status     : {{ target_kb_installed }}"
-          - "Installed On         : {{ target_kb_installed_on }}"
-          - "Patch Verification   : {{ patch_verification_status }}"
+          - "Patch Policy          : Security Updates Only"
+          - "Patch Model           : Configured Target KB"
+          - "Update Type           : {{ target_update_type }}"
+          - "KB ID                 : {{ target_kb_reported }}"
+          - "Installed Date        : {{ target_kb_installed_on }}"
+          - "Installation Status   : {{ target_kb_installed }}"
+          - "Patch Verification    : {{ patch_verification_status }}"
           - ""
-          - "6. RECENT HOTFIXES"
-          - "----------------------------------------------------------------"
-          - "{{ recent_hotfixes.stdout | default('No hotfix information returned.') }}"
-          - ""
-          - "7. BACKUP / EBS SNAPSHOT"
+          - "6. BACKUP / EBS SNAPSHOT"
           - "----------------------------------------------------------------"
           - "Snapshot ID           : {{ compliance_snapshot_id }}"
           - "Snapshot State        : {{ compliance_snapshot_state }}"
           - "Snapshot Status       : {{ final_snapshot_status }}"
           - ""
-          - "8. POST-PATCH VALIDATION"
+          - "7. POST-PATCH VALIDATION"
           - "----------------------------------------------------------------"
           - "WinRM                 : {{ connectivity_status }}"
           - "Disk Status           : {{ disk_status }}"
-          - "Windows Update Service: {{ windows_update_service_state }}"
           - "Reboot Pending        : {{ reboot_pending }}"
           - "Reboot Status         : {{ reboot_status }}"
           - "Health Check          : {{ health_check_status }}"
           - ""
-          - "9. COMPLIANCE SUMMARY"
+          - "8. COMPLIANCE SUMMARY"
           - "----------------------------------------------------------------"
           - "Target KB Verification: {{ patch_verification_status }}"
           - "Snapshot              : {{ final_snapshot_status }}"
@@ -435,7 +422,7 @@
           - "================================================================"
 
     # ============================================================
-    # 12. FAIL JOB IF NON-COMPLIANT
+    # 11. FAIL JOB IF NON-COMPLIANT
     # ============================================================
 
     - name: Fail job if Windows server is non-compliant
@@ -447,7 +434,7 @@
       when: compliance_status != 'COMPLIANT'
 
     # ============================================================
-    # 13. SUCCESS MESSAGE
+    # 12. SUCCESS MESSAGE
     # ============================================================
 
     - name: Compliance report completed successfully
