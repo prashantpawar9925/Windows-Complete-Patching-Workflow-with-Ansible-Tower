@@ -118,7 +118,7 @@
         disk_status: >-
           {{
             'PASS'
-            if disk_free_gb >= minimum_disk_gb
+            if (disk_free_gb | float) >= (minimum_disk_gb | float)
             else 'FAIL'
           }}
 
