@@ -161,48 +161,42 @@
 
     - name: Check Windows reboot requirement
       ansible.windows.win_shell: |
-        $pending = $false
+        $cbsPending = Test-Path `
+          "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending"
 
-        if (Test-Path `
-          "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending") {
-          $pending = $true
-        }
-
-        if (Test-Path `
-          "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired") {
-          $pending = $true
-        }
+        $wuPending = Test-Path `
+          "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired"
 
         $sessionManager = Get-ItemProperty `
           "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager" `
           -Name PendingFileRenameOperations `
           -ErrorAction SilentlyContinue
 
-        if ($sessionManager.PendingFileRenameOperations) {
-          $pending = $true
-        }
+        $renamePending = [bool]$sessionManager.PendingFileRenameOperations
 
-        if ($pending) {
-          Write-Output "REBOOT_REQUIRED"
-        }
-        else {
-          Write-Output "NO_REBOOT_REQUIRED"
-        }
+        [PSCustomObject]@{
+          CBSRebootPending     = $cbsPending
+          WindowsUpdatePending = $wuPending
+          PendingFileRename    = $renamePending
+          RebootRequired       = ($cbsPending -or $wuPending)
+        } | ConvertTo-Json -Compress
       register: reboot_check
       changed_when: false
 
+    - name: Parse reboot requirement
+      ansible.builtin.set_fact:
+        reboot_details: "{{ reboot_check.stdout | trim | from_json }}"
+
     - name: Determine reboot status
       ansible.builtin.set_fact:
-        reboot_pending: >-
-          {{
-            'REBOOT_REQUIRED' in reboot_check.stdout
-          }}
+        reboot_pending: "{{ reboot_details.RebootRequired | bool }}"
         reboot_status: >-
           {{
-            'PASS'
-            if 'NO_REBOOT_REQUIRED' in reboot_check.stdout
-            else 'FAIL'
+            'FAIL'
+            if reboot_details.RebootRequired | bool
+            else 'PASS'
           }}
+
 
     # ============================================================
     # 6. PATCH INFORMATION
@@ -272,12 +266,9 @@
 
     - name: Set snapshot information from workflow
       ansible.builtin.set_fact:
-        compliance_snapshot_id: >-
-          {{ snapshot_id | default('NOT_AVAILABLE') }}
-        compliance_snapshot_state: >-
-          {{ snapshot_state | default('NOT_AVAILABLE') }}
-        compliance_snapshot_status: >-
-          {{ snapshot_status | default('NOT_AVAILABLE') }}
+        compliance_snapshot_id: "{{ snapshot_id | default('NOT_AVAILABLE') | trim }}"
+        compliance_snapshot_state: "{{ snapshot_state | default('NOT_AVAILABLE') | trim | lower }}"
+        compliance_snapshot_status: "{{ snapshot_status | default('NOT_AVAILABLE') | trim | upper }}"
 
     - name: Determine snapshot validation status
       ansible.builtin.set_fact:
@@ -285,10 +276,20 @@
           {{
             'PASS'
             if
-              compliance_snapshot_state == 'completed'
+              compliance_snapshot_id != 'NOT_AVAILABLE'
+              and compliance_snapshot_id | length > 0
+              and compliance_snapshot_state == 'completed'
               and compliance_snapshot_status in ['SUCCESS', 'PASS']
             else 'FAIL'
           }}
+
+    - name: Display snapshot validation inputs
+      ansible.builtin.debug:
+        msg:
+          - "Snapshot ID       : {{ compliance_snapshot_id }}"
+          - "Snapshot State    : {{ compliance_snapshot_state }}"
+          - "Workflow Status   : {{ compliance_snapshot_status }}"
+          - "Validation Result : {{ final_snapshot_status }}"
 
     # ============================================================
     # 9. OVERALL HEALTH AND COMPLIANCE
