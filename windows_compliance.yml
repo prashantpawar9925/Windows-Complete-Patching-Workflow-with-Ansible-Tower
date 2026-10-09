@@ -123,9 +123,11 @@
         $wuPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired"
         $sessionPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager"
 
+        # Primary reboot indicators
         $cbsPending = Test-Path $cbsPath
         $wuPending = Test-Path $wuPath
 
+        # Additional diagnostic information only
         $renameValue = Get-ItemProperty `
           -Path $sessionPath `
           -Name "PendingFileRenameOperations" `
@@ -133,11 +135,15 @@
 
         $fileRenamePending = $null -ne $renameValue
 
+        # Pending file rename operations alone do not prove
+        # that a reboot is required.
+        $rebootRequired = ($cbsPending -or $wuPending)
+
         [PSCustomObject]@{
           CBSPending = $cbsPending
           WindowsUpdatePending = $wuPending
           PendingFileRenameOperations = $fileRenamePending
-          RebootRequired = ($cbsPending -or $wuPending -or $fileRenamePending)
+          RebootRequired = $rebootRequired
         } | ConvertTo-Json -Compress
       register: reboot_result
       changed_when: false
