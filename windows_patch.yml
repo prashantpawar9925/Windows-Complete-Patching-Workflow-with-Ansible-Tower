@@ -1,5 +1,6 @@
+```yaml
 ---
-- name: Install Windows Server 2022 Cumulative Update KB5129237
+- name: Install Approved Windows Server 2022 Security Update
   hosts: Win_Server
   gather_facts: false
 
@@ -8,7 +9,11 @@
 
   tasks:
 
-    - name: Check if target cumulative update is already installed
+    # ============================================================
+    # 1. CHECK WHETHER THE TARGET KB IS ALREADY INSTALLED
+    # ============================================================
+
+    - name: Check target cumulative update installation status
       ansible.windows.win_shell: |
         $kb = Get-HotFix -Id "{{ target_kb }}" -ErrorAction SilentlyContinue
 
@@ -23,11 +28,15 @@
       register: kb_status
       changed_when: false
 
-    - name: Display current KB status
+    - name: Display current target KB status
       ansible.builtin.debug:
         msg: "{{ kb_status.stdout_lines }}"
 
-    - name: Install KB5129237 only
+    # ============================================================
+    # 2. INSTALL ONLY THE APPROVED SECURITY UPDATE
+    # ============================================================
+
+    - name: Install target cumulative security update
       ansible.windows.win_updates:
         category_names:
           - SecurityUpdates
@@ -39,15 +48,24 @@
       register: windows_update_result
       when: "'NOT_INSTALLED' in kb_status.stdout"
 
-    - name: Display Windows Update result
+    # ============================================================
+    # 3. DISPLAY INSTALLATION RESULT
+    # ============================================================
+
+    - name: Display Windows Update execution result
       ansible.builtin.debug:
         msg:
+          - "Target KB: {{ target_kb }}"
           - "Updates found: {{ windows_update_result.found_update_count | default(0) }}"
           - "Updates installed: {{ windows_update_result.installed_update_count | default(0) }}"
           - "Reboot required: {{ windows_update_result.reboot_required | default(false) }}"
           - "Server rebooted: {{ windows_update_result.rebooted | default(false) }}"
 
-    - name: Verify KB5129237
+    # ============================================================
+    # 4. VERIFY THE TARGET KB AFTER INSTALLATION
+    # ============================================================
+
+    - name: Verify target cumulative security update
       ansible.windows.win_shell: |
         $kb = Get-HotFix -Id "{{ target_kb }}" -ErrorAction SilentlyContinue
 
@@ -63,6 +81,21 @@
       register: kb_verify
       changed_when: false
 
-    - name: Display final KB status
+    - name: Display final target KB verification
       ansible.builtin.debug:
         msg: "{{ kb_verify.stdout_lines }}"
+
+    # ============================================================
+    # 5. PUBLISH KB FOR THE DOWNSTREAM COMPLIANCE JOB
+    # ============================================================
+
+    - name: Publish target KB to AWX workflow artifacts
+      ansible.builtin.set_stats:
+        data:
+          target_kb: "{{ target_kb }}"
+        aggregate: true
+
+    - name: Confirm target KB published
+      ansible.builtin.debug:
+        msg: "Published {{ target_kb }} for the downstream compliance report."
+```
