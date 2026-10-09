@@ -264,11 +264,46 @@
     # 8. BACKUP / EBS SNAPSHOT VALIDATION
     # ============================================================
 
-    - name: Set snapshot information from workflow
+    ```yaml
+    # ============================================================
+    # 8. BACKUP / EBS SNAPSHOT VALIDATION
+    # ============================================================
+
+    - name: Find Windows pre-patch snapshots in AWS
+      amazon.aws.ec2_snapshot_info:
+        region: ap-south-1
+        filters:
+          "tag:PatchWorkflow": "Windows-Patching"
+          "tag:ServerIP": "{{ ansible_host }}"
+      delegate_to: localhost
+      register: compliance_snapshot_lookup
+      changed_when: false
+
+    - name: Select latest Windows pre-patch snapshot
       ansible.builtin.set_fact:
-        compliance_snapshot_id: "{{ snapshot_id | default('NOT_AVAILABLE') | trim }}"
-        compliance_snapshot_state: "{{ snapshot_state | default('NOT_AVAILABLE') | trim | lower }}"
-        compliance_snapshot_status: "{{ snapshot_status | default('NOT_AVAILABLE') | trim | upper }}"
+        compliance_latest_snapshot: >-
+          {{
+            (
+              compliance_snapshot_lookup.snapshots
+              | sort(attribute='start_time', reverse=true)
+              | first
+            )
+            if (compliance_snapshot_lookup.snapshots | length > 0)
+            else {}
+          }}
+
+    - name: Set verified snapshot information
+      ansible.builtin.set_fact:
+        compliance_snapshot_id: >-
+          {{ compliance_latest_snapshot.snapshot_id | default('NOT_AVAILABLE') }}
+        compliance_snapshot_state: >-
+          {{ compliance_latest_snapshot.state | default('NOT_AVAILABLE') | lower }}
+        compliance_snapshot_status: >-
+          {{
+            'SUCCESS'
+            if (compliance_latest_snapshot.state | default('') | lower) == 'completed'
+            else 'FAIL'
+          }}
 
     - name: Determine snapshot validation status
       ansible.builtin.set_fact:
@@ -277,9 +312,8 @@
             'PASS'
             if
               compliance_snapshot_id != 'NOT_AVAILABLE'
-              and compliance_snapshot_id | length > 0
               and compliance_snapshot_state == 'completed'
-              and compliance_snapshot_status in ['SUCCESS', 'PASS']
+              and compliance_snapshot_status == 'SUCCESS'
             else 'FAIL'
           }}
 
@@ -288,8 +322,9 @@
         msg:
           - "Snapshot ID       : {{ compliance_snapshot_id }}"
           - "Snapshot State    : {{ compliance_snapshot_state }}"
-          - "Workflow Status   : {{ compliance_snapshot_status }}"
+          - "Snapshot Status   : {{ compliance_snapshot_status }}"
           - "Validation Result : {{ final_snapshot_status }}"
+
 
     # ============================================================
     # 9. OVERALL HEALTH AND COMPLIANCE
