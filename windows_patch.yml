@@ -1,4 +1,4 @@
-```yaml
+
 ---
 - name: Install Approved Windows Server 2022 Security Update
   hosts: Win_Server
@@ -98,4 +98,3 @@
     - name: Confirm target KB published
       ansible.builtin.debug:
         msg: "Published {{ target_kb }} for the downstream compliance report."
-```
