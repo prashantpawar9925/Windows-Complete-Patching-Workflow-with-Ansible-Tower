@@ -264,11 +264,6 @@
     # 8. BACKUP / EBS SNAPSHOT VALIDATION
     # ============================================================
 
-    ```yaml
-    # ============================================================
-    # 8. BACKUP / EBS SNAPSHOT VALIDATION
-    # ============================================================
-
     - name: Find Windows pre-patch snapshots in AWS
       amazon.aws.ec2_snapshot_info:
         region: ap-south-1
