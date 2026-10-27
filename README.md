@@ -1,6 +1,6 @@
-Automated Linux and Windows Server Patching Using Ansible AWX / Tower
+## **Automated Linux and Windows Server Patching Using Ansible AWX / Tower**
 
-Project Overview
+## **Project Overview**
 
 This project automates operating system patching for Linux and Windows servers using Ansible Tower / AWX, with centralized orchestration and standardized patch management.
 
@@ -8,7 +8,7 @@ The workflow performs pre-patching health checks, creates AWS EBS snapshots befo
 
 The solution is designed for Linux and Windows virtual machines hosted on AWS EC2 and can be adapted to other supported environments.
 
-Project Objectives
+## **Project Objectives**
 
 Reduce manual patching effort through automation.
 
@@ -43,3 +43,24 @@ Post-patching validation: Verify patch installation, server connectivity, and sy
 Compliance reporting: Record patch status, server details, reboot results, and validation outcomes.
 
 Workflow-based execution: Separate job templates into stages and connect them using AWX Workflow Job Templates.
+
+## **Patching Workflow**
+
+The patching process follows these stages:
+
+Pre-check: Validate connectivity, operating system details, disk space, and system readiness.
+
+Snapshot creation: Create AWS EBS snapshots of the relevant volumes before patching.
+
+Snapshot verification: Confirm that the required snapshots have been created successfully.
+
+Patch installation: Install approved operating system updates on Linux and Windows servers.
+
+Reboot handling: Restart the server when required by the update process.
+
+Post-check: Verify server availability, operating system health, and patch installation.
+
+Compliance reporting: Generate a report showing patching results and compliance status.
+
+## **Architecture Diagram**:
+
