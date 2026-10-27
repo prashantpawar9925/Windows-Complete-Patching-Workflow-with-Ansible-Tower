@@ -10,57 +10,57 @@ The solution is designed for Linux and Windows virtual machines hosted on AWS EC
 
 ## **Project Objectives**
 
-Reduce manual patching effort through automation.
+- Reduce manual patching effort through automation.
 
-Standardize patch management across Linux and Windows servers.
+- Standardize patch management across Linux and Windows servers.
 
-Create AWS EBS snapshots before operating system changes to support recovery.
+- Create AWS EBS snapshots before operating system changes to support recovery.
 
-Install approved patches through controlled Ansible workflows.
+- Install approved patches through controlled Ansible workflows.
 
-Minimize downtime by rebooting servers only when required.
+- Minimize downtime by rebooting servers only when required.
 
-Validate server health and patch installation after updates.
+- Validate server health and patch installation after updates.
 
-Generate auditable patch compliance reports.
+- Generate auditable patch compliance reports.
 
-Improve repeatability, operational visibility, and consistency across patching operations.
+- Improve repeatability, operational visibility, and consistency across patching operations.
 
-Key Features
+## **Key Features**
 
-Centralized orchestration: Manage patching jobs through AWX / Ansible Tower.
+**1.Centralized orchestration**: Manage patching jobs through AWX / Ansible Tower.
 
-Pre-patching health checks: Validate server connectivity, operating system details, available disk space, and other required conditions.
+**2.Pre-patching health checks**: Validate server connectivity, operating system details, available disk space, and other required conditions.
 
-Automated backup: Create EBS snapshots of the relevant EC2 volumes before patch installation.
+**3.Automated backup**: Create EBS snapshots of the relevant EC2 volumes before patch installation.
 
-Controlled patch installation: Apply approved Linux and Windows operating system updates.
+**4.Controlled patch installation**: Apply approved Linux and Windows operating system updates.
 
-Reboot management: Restart servers only when required and wait for them to become available.
+**5.Reboot management**: Restart servers only when required and wait for them to become available.
 
-Post-patching validation: Verify patch installation, server connectivity, and system health.
+**6.Post-patching validation**: Verify patch installation, server connectivity, and system health.
 
-Compliance reporting: Record patch status, server details, reboot results, and validation outcomes.
+**7.Compliance reporting**: Record patch status, server details, reboot results, and validation outcomes.
 
-Workflow-based execution: Separate job templates into stages and connect them using AWX Workflow Job Templates.
+**8.Workflow-based execution**: Separate job templates into stages and connect them using AWX Workflow Job Templates.
 
 ## **Patching Workflow**
 
 The patching process follows these stages:
 
-Pre-check: Validate connectivity, operating system details, disk space, and system readiness.
+**Pre-check**: Validate connectivity, operating system details, disk space, and system readiness.
 
-Snapshot creation: Create AWS EBS snapshots of the relevant volumes before patching.
+**Snapshot creation**: Create AWS EBS snapshots of the relevant volumes before patching.
 
-Snapshot verification: Confirm that the required snapshots have been created successfully.
+**Snapshot verification**: Confirm that the required snapshots have been created successfully.
 
-Patch installation: Install approved operating system updates on Linux and Windows servers.
+**Patch installation**: Install approved operating system updates on Linux and Windows servers.
 
-Reboot handling: Restart the server when required by the update process.
+**Reboot handling**: Restart the server when required by the update process.
 
-Post-check: Verify server availability, operating system health, and patch installation.
+**Post-check**: Verify server availability, operating system health, and patch installation.
 
-Compliance reporting: Generate a report showing patching results and compliance status.
+**Compliance reporting**: Generate a report showing patching results and compliance status.
 
 ## **Architecture Diagram**:
 
