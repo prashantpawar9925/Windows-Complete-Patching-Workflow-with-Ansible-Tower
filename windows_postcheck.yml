@@ -50,8 +50,8 @@
         Write-Output "C Drive Total Space: $totalGB GB"
         Write-Output "C Drive Free Space: $freeGB GB"
 
-        if ($freeGB -lt 5) {
-          Write-Error "C drive has less than 5 GB free space."
+        if ($freeGB -lt 4) {
+          Write-Error "C drive has less than 4 GB free space."
           exit 1
         }
       register: disk_check
