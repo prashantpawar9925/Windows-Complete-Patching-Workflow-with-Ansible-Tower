@@ -50,13 +50,13 @@
       register: free_space
       changed_when: false
 
-    - name: Fail if C drive has less than 8 GB free
+    - name: Fail if C drive has less than 4 GB free
       ansible.builtin.fail:
         msg: >-
           Pre-check failed.
           C drive has only {{ free_space.stdout | trim }} GB free.
-          Minimum required free space is 8 GB.
-      when: (free_space.stdout | trim | float) < 8
+          Minimum required free space is 4 GB.
+      when: (free_space.stdout | trim | float) < 4
 
     # ============================================================
     # 5. WINDOWS UPDATE SERVICE
