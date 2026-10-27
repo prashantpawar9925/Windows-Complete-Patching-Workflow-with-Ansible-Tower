@@ -50,7 +50,7 @@
         Write-Output "C Drive Total Space: $totalGB GB"
         Write-Output "C Drive Free Space: $freeGB GB"
 
-        if ($freeGB -lt 10) {
+        if ($freeGB -lt 5) {
           Write-Error "C drive has less than 5 GB free space."
           exit 1
         }
