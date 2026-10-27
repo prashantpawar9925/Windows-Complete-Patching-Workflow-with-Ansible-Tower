@@ -5,7 +5,7 @@
 
   vars:
     target_update_type: "Monthly Cumulative Security Update"
-    minimum_disk_gb: 10
+    minimum_disk_gb: 4
     aws_region: "ap-south-1"
 
   tasks:
