@@ -5,7 +5,7 @@
   gather_facts: false
 
   vars:
-    target_kb: "KB5134140"
+    target_kb: "KB5126655"
 
   tasks:
 
