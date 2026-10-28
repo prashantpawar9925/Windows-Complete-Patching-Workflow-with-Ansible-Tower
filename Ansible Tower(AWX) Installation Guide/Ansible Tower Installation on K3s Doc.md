@@ -151,3 +151,39 @@ images:
     newTag: v0.15.0
 ```
 
+### Step 12.Reapply Kustomize Configuration
+```bash
+kubectl apply -k .
+```
+
+### Step 13. Check POD Status
+- kubectl get awx -n awx 
+- kubectl get pods -n awx    or 
+- kubectl get pods -n awx -w 
+- kubectl get all -n awx
+
+**To Check Operator Deployment** 
+- kubectl get deployment -n awx
+- kubectl get deployment awx-operator-controller-manager -n awx
+- kubectl get pods -n awx -o wide 
+
+### Step 14. View Logs
+- kubectl logs -f deployment/awx-operator-controller-manager -c awx-manager -n awx
+
+**To check Services:**
+- kubectl get svc -n awx 
+
+### Step 15. Get the AWX admin password 
+First check the secret: 
+- kubectl get secrets -n awx 
+Then, if the secret is `awx-demo-admin-password:`
+
+**Retrieve Admin Password**
+- kubectl get secret awx-demo-admin-password -n awx -o jsonpath="{.data.password}" | base64 --decode 
+ 
+### Step 16. Access the AWX Dashboard
+- http://<your-server-ip>:32000
+ 
+ #Username: admin
+ #Password: (from previous step)
+
