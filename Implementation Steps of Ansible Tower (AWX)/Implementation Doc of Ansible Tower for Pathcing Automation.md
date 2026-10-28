@@ -89,5 +89,16 @@ After clicking on Add you have to fill the below fields.
 
 - **Note**: when you add linux machine credentials then you can use SSH Private key and when you use Windows machine then you can go with Password
 
+### Step 4).How to add the Project into AWX(Ansible Tower)
+Go to AWX ⇒ Projects ⇒ click on Add (to create new project)
+
+**After clicking Enter the required fields below**
+- **Name**:
+- **Description**:
+- **Organization**:
+- **Source Control Type**: Git 
+- **Source control URL**: Enter the Git url here. (which is where your Ansible Playbook is stored.)
+- Click on **Save**.
+- After Save then you have to click on **Sync**.
 
 
