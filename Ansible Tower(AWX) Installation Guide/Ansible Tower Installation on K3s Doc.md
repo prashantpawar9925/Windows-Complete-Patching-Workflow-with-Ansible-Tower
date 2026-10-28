@@ -184,6 +184,6 @@ Then, if the secret is `awx-demo-admin-password:`
 ### Step 16. Access the AWX Dashboard
 - http://your-server-ip:32000
  
- ##Username: admin
- ##Password: (from previous step)
+- Username: admin
+- Password: (from previous step)
 
