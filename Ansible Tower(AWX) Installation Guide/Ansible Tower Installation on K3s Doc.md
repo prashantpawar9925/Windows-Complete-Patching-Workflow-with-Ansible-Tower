@@ -41,10 +41,13 @@
 
 **Set ownership:** 
 - sudo chown $USER:$USER ~/.kube/config
+  
 **Set the environment variable:** 
 - export KUBECONFIG=~/.kube/config
+  
 **To make it persistent:** 
 - echo 'export KUBECONFIG=~/.kube/config' >> ~/.bashrc
+  
 **Reload:** 
 - source ~/.bashrc
 
