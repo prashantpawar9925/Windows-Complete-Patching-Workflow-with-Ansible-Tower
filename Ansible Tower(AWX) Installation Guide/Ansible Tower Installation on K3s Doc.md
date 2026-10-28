@@ -51,3 +51,21 @@
 **Reload:** 
 - source ~/.bashrc
 
+4.Verify Kubernetes Cluster
+kubectl version
+kubectl get nodes
+kubectl get pods -A (To check all pods)
+Kubectl cluster-info
+
+
+**Step 5.Create AWX Namespace** 
+- kubectl create namespace awx
+
+**To verify:**
+- kubectl get namespace awx
+
+**Step 6.Create AWX Kustomization Directory**
+- mkdir -p ~/awx-deployment cd ~/awx-deployment 
+
+**To Verify:** 
+pwd
