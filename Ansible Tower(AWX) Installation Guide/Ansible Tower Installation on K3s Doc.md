@@ -182,8 +182,8 @@ Then, if the secret is `awx-demo-admin-password:`
 - kubectl get secret awx-demo-admin-password -n awx -o jsonpath="{.data.password}" | base64 --decode 
  
 ### Step 16. Access the AWX Dashboard
-- http://<your-server-ip>:32000
+- http://your-server-ip:32000
  
- #Username: admin
- #Password: (from previous step)
+ ##Username: admin
+ ##Password: (from previous step)
 
