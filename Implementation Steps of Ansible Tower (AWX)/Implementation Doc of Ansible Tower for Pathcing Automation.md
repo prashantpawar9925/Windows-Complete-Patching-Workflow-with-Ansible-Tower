@@ -150,3 +150,35 @@ After clicking Enter the required fields:
   
 After clicking on **Save**. you will get the prompt to click on Start to add the Nodes.
 
+After clicking on **Start**
+
+Enter the following information fields:
+
+- **Node Type** : Job Template (keep default)
+  
+- **Name**: here you have to select the Job template which you have already  created.
+  
+- Click on **Save**.
+
+
+After clicking on **Save** Option. you will get the **Visualizer** prompt
+
+After this if we want to **add multiple Nodes (job template)** click on **Plus Icon ( + )** to add a **new node**.
+
+After clicking **+ Icon** to create a new node.
+
+- Select On **Success**
+  
+- Click on **Next**
+
+After clicking on **Next** option. Again we have to add **nodes (job template)**
+
+- **Node Type** : Job Template (keep default)
+  
+- **Name**: here you have to select the Job template which you have already  created.
+  
+- Click on **Save**.
+
+After clicking on **Save** option you will get the same **visualizer prompt** it will add a **new node (job template)** in below SS.
+
+Again if you want a **new node (job template)** to add. follow the same steps from above.
