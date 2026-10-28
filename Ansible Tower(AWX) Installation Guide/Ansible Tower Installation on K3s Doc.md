@@ -11,7 +11,8 @@
 - sudo apt-get upgrade -y
 
 **Install required utilities:** 
-- sudo apt install -y \
+```bash
+sudo apt install -y \
     curl \
     wget \
     git \
@@ -19,7 +20,7 @@
     jq \
     unzip \
     ca-certificates
-
+```
 **To Verify:**
 - git - - version
 - curl - - version
