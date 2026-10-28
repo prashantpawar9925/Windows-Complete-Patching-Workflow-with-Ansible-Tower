@@ -48,6 +48,7 @@ Under this above Inventory
 Go to **Hosts**
 
 Under the Hosts you can add the host details of each server.
+
 **Eg: Name: Linux_Server** 
 ```bash
 Add this host details in variables:
