@@ -107,5 +107,22 @@ images:
 ```bash
 kubectl apply -k .
 ```
+### Step 9.Verify Operator is Running
+- kubectl get pods -n awx
 
+### Step 10.Create AWX Instance. Create a file named `awx-demo.yaml`
+
+```bash
+vim awx-demo.yaml
+```
+```yaml
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  name: awx-demo
+  namespace: awx
+spec:
+  service_type: NodePort
+  nodeport_port: 32000
+```
 
