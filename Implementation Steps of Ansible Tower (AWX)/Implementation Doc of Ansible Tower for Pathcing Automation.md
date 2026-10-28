@@ -102,6 +102,8 @@ Go to AWX ⇒ Projects ⇒ click on Add (to create new project)
 - Click on **Save**.
 - After Save then you have to click on **Sync**.
 
+[Synch](https://github.com/user-attachments/assets/f83f1198-ee1e-45ef-992b-a7ca088643eb)
+
 **After adding the Project into the AWX(Ansible Tower)** , 
 ### Step 5).To create a Job template to run the Job.
 **Job Template**:
