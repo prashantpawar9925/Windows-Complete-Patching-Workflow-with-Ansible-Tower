@@ -6,7 +6,7 @@
 - 8GB RAM
 
 ## Follow below provided steps ##
-**Step 1.To Update Your System**
+### Step 1.To Update Your System
 - sudo apt-get update 
 - sudo apt-get upgrade -y
 
@@ -24,7 +24,7 @@
 - git - - version
 - curl - - version
 
-**Step 2.Install k3s**
+### Step 2.Install k3s
 *(AWX Operator requires Kubernetes. For your single-node AWS lab, K3s is a convenient lightweight Kubernetes distribution. )*
 - curl -sfL https://get.k3s.io | sh - 
 
@@ -32,7 +32,7 @@
 - sudo systemctl status k3s
 - sudo systemctl is-active k3s
 
-**Step 3.Configure kubectl**
+### Step 3.Configure kubectl
  ( K3s creates its kubeconfig at:  /etc/rancher/k3s/k3s.yaml )
 
 **Instead of changing ownership of the K3s-managed file, copy it to your user's .kube directory:**
@@ -58,13 +58,13 @@ kubectl get pods -A (To check all pods)
 Kubectl cluster-info
 
 
-**Step 5.Create AWX Namespace** 
+### Step 5.Create AWX Namespace 
 - kubectl create namespace awx
 
 **To verify:**
 - kubectl get namespace awx
 
-**Step 6.Create AWX Kustomization Directory**
+### Step 6.Create AWX Kustomization Directory
 - mkdir -p ~/awx-deployment cd ~/awx-deployment 
 
 **To Verify:** 
@@ -96,8 +96,13 @@ images:
     newName: registry.k8s.io/kubebuilder/kube-rbac-proxy
     newTag: v0.15.0
 ```
+**Verify Kustomization:**
+- kubectl kustomize .
+  
+(This should generate Kubernetes manifests. If you get YAML/output instead of an error, the Kustomization is valid.)
 
-Apply the configuration:
+
+### Step 8.Apply the configuration:
 
 ```bash
 kubectl apply -k .
