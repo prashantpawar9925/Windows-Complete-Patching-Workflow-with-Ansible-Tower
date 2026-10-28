@@ -71,7 +71,7 @@ Kubectl cluster-info
 - pwd
 
 **Step 7.Create kustomization.yaml**
-##vim kustomization.yaml##
+*vim kustomization.yaml*
 
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
