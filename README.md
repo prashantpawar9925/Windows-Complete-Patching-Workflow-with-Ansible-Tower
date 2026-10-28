@@ -64,4 +64,4 @@ The patching process follows these stages:
 
 ## **Architecture Diagram**:
 
-![Automated Patching Workflow using Ansible Tower](Automated_Patching_Workflow_Ansible_Tower.drawio.png)
+![Architecture Diagram](https://github.com/user-attachments/assets/d080155f-2045-4ef1-bd9a-1fc144ba6f6d)
