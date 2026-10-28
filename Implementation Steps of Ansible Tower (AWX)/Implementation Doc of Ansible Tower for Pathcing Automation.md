@@ -34,3 +34,24 @@ ssh ubuntu@ip_of_worker_node.
 - **Description**: 
 - **Galaxy Credentials**: keep it default 
 
+**After this you have to add the credentials on AWX (Ansible Tower) UI.**
+### Step 2).To Add the Inventory on AWX:
+Go to AWX ⇒ Resources ⇒ Inventories ⇒ click on Add Inventory.
+Under Inventory fill the below fields.
+- **Name**: Windows-Linux_Server
+- **Description**: 
+- **Organization**: Default
+- click on **Save**.
+  
+After create **Inventory** just click on that Inventory name: **windows-Linux_Server**
+Under this above Inventory 
+Go to **Hosts**
+
+Under the Hosts you can add the host details of each server.
+**Eg: Name: Linux_Server** 
+```bash
+Add this host details in variables:
+ansible_host: 172.31.3.199  (Linux server private ip)
+ansible_connection: ssh
+ansible_python_interpreter: /usr/bin/python3
+```
