@@ -68,4 +68,23 @@ Kubectl cluster-info
 - mkdir -p ~/awx-deployment cd ~/awx-deployment 
 
 **To Verify:** 
-pwd
+- pwd
+
+**Step 7.Create kustomization.yaml**
+##vim kustomization.yaml##
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: awx
+
+resources:
+  - github.com/ansible/awx-operator/config/default?ref=2.19.1
+
+images:
+  - name: quay.io/ansible/awx-operator
+    newTag: 2.19.1
+
+  - name: gcr.io/kubebuilder/kube-rbac-proxy:v0.15.0
+    newName: registry.k8s.io/kubebuilder/kube-rbac-proxy
+    newTag: v0.15.0
+
