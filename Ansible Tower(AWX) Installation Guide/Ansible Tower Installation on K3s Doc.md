@@ -30,4 +30,21 @@
 
 **To check K3s status:**
 - sudo systemctl status k3s
-- sudo systemctl is-active k3s 
+- sudo systemctl is-active k3s
+
+**Step 3.Configure kubectl**
+ ( K3s creates its kubeconfig at:  /etc/rancher/k3s/k3s.yaml )
+
+**Instead of changing ownership of the K3s-managed file, copy it to your user's .kube directory:**
+- mkdir -p ~/.kube
+- sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+
+**Set ownership:** 
+- sudo chown $USER:$USER ~/.kube/config
+**Set the environment variable:** 
+- export KUBECONFIG=~/.kube/config
+**To make it persistent:** 
+- echo 'export KUBECONFIG=~/.kube/config' >> ~/.bashrc
+**Reload:** 
+- source ~/.bashrc
+
