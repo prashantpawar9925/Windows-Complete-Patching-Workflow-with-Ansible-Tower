@@ -129,4 +129,24 @@ Go to **AWX ⇒ Resources ⇒ Templates ⇒ Click on Add job template**.(to crea
 
 - After Save just click on **Launch**.
 
+### Step 6). To create a Workflow job template:
+**Workflow Job Template**: 
+*(A graphical workflow that connects multiple job templates, allowing you to control execution order and define what happens when a job succeeds or fails.)*
+**Example**: Pre-check → Snapshot → Patch → Reboot → Compliance report.
+
+Go to **AWX ⇒ Resources ⇒ Templates ⇒ Click on Add Workflow template**
+
+After clicking Enter the required fields:
+
+- **Name**:
+  
+- **Description**:
+
+- **Organization**:
+  
+- **Inventory**: Select inventory here
+  
+- Click on **Save**.
+  
+After clicking on **Save**. you will get the prompt to click on Start to add the Nodes.
 
