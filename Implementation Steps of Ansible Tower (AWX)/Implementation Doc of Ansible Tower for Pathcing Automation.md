@@ -101,4 +101,24 @@ Go to AWX ⇒ Projects ⇒ click on Add (to create new project)
 - Click on **Save**.
 - After Save then you have to click on **Sync**.
 
+**After adding the Project into the AWX(Ansible Tower)** , 
+### Step 5).To create a Job template to run the Job.
+**Job Template**:
+*(A configuration for running an individual Ansible playbook against a selected inventory, using credentials and other execution settings.)
+Example: Run the Linux pre-check playbook.* 
+
+Go to **AWX ⇒ Resources ⇒ Templates ⇒ Click on Add job template**.(to create New job template)
+
+**After clicking Enter the Required fields below:**
+
+**Name**:
+**Description**:
+**Job Type**: Run (keep default)
+**Inventory** : Select inventory here
+**Project**: Select project here
+**Playbook**: Select the playbook which you want to apply.
+**Credentials**: Select the Credentials here
+Click on **Save**.
+After Save just click on **Launch**.
+
 
