@@ -5,3 +5,20 @@
 - 4vCPU
 - 8GB RAM
   
+**1.To Update Your System**
+sudo apt-get update 
+sudo apt-get upgrade -y
+
+**Install required utilities:** 
+sudo apt install -y \
+    curl \
+    wget \
+    git \
+    vim \
+    jq \
+    unzip \
+    ca-certificates
+
+**To Verify:**
+git - - version
+curl - - version
