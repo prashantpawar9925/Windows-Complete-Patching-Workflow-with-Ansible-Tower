@@ -6,7 +6,7 @@
 - 8GB RAM
 
 ## Follow below provided steps ##
-**1.To Update Your System**
+**Step 1.To Update Your System**
 - sudo apt-get update 
 - sudo apt-get upgrade -y
 
@@ -23,3 +23,11 @@
 **To Verify:**
 - git - - version
 - curl - - version
+
+**Step 2.Install k3s**
+*(AWX Operator requires Kubernetes. For your single-node AWS lab, K3s is a convenient lightweight Kubernetes distribution. )
+- curl -sfL https://get.k3s.io | sh - 
+
+**To check K3s status:**
+- sudo systemctl status k3s
+- sudo systemctl is-active k3s 
