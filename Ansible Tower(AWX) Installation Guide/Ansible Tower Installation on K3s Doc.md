@@ -6,11 +6,11 @@
 - 8GB RAM
   
 **1.To Update Your System**
-sudo apt-get update 
-sudo apt-get upgrade -y
+- sudo apt-get update 
+- sudo apt-get upgrade -y
 
 **Install required utilities:** 
-sudo apt install -y \
+- sudo apt install -y \
     curl \
     wget \
     git \
@@ -20,5 +20,5 @@ sudo apt install -y \
     ca-certificates
 
 **To Verify:**
-git - - version
-curl - - version
+- git - - version
+- curl - - version
