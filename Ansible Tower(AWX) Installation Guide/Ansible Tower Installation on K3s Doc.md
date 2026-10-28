@@ -70,9 +70,17 @@ Kubectl cluster-info
 **To Verify:** 
 - pwd
 
-**Step 7.Create kustomization.yaml**
-*vim kustomization.yaml*
+### Step 7: Create `kustomization.yaml`
 
+Create the `kustomization.yaml` file:
+
+```bash
+vim kustomization.yaml
+```
+
+Add the following configuration:
+
+```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: awx
@@ -87,4 +95,12 @@ images:
   - name: gcr.io/kubebuilder/kube-rbac-proxy:v0.15.0
     newName: registry.k8s.io/kubebuilder/kube-rbac-proxy
     newTag: v0.15.0
+```
+
+Apply the configuration:
+
+```bash
+kubectl apply -k .
+```
+
 
