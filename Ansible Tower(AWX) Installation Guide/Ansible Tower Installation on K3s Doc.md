@@ -7,9 +7,10 @@
 
 ## Follow below provided steps ##
 ### Step 1.To Update Your System
-- sudo apt-get update 
-- sudo apt-get upgrade -y
-
+```bash
+sudo apt-get update 
+sudo apt-get upgrade -y
+```
 **Install required utilities:** 
 ```bash
 sudo apt install -y \
