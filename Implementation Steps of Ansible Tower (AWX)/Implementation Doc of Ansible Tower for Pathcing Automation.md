@@ -111,22 +111,22 @@ Go to **AWX ⇒ Resources ⇒ Templates ⇒ Click on Add job template**.(to crea
 
 **After clicking Enter the Required fields below:**
 
-**Name**:
+- **Name**:
 
-**Description**:
+- **Description**:
 
-**Job Type**: Run (keep default)
+- **Job Type**: Run (keep default)
 
-**Inventory** : Select inventory here
+- **Inventory** : Select inventory here
 
-**Project**: Select project here
+- **Project**: Select project here
 
-**Playbook**: Select the playbook which you want to apply.
+- **Playbook**: Select the playbook which you want to apply.
 
-**Credentials**: Select the Credentials here
+- **Credentials**: Select the Credentials here
 
-Click on **Save**.
+- Click on **Save**.
 
-After Save just click on **Launch**.
+- After Save just click on **Launch**.
 
 
