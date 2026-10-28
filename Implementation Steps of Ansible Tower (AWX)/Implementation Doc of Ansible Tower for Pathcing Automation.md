@@ -56,6 +56,7 @@ ansible_host: 172.31.3.199  (Linux server private ip)
 ansible_connection: ssh
 ansible_python_interpreter: /usr/bin/python3
 ```
+![Linux_Server Host](https://github.com/user-attachments/assets/0d9ac2fc-e5be-44b0-b376-a75dbda5ab71)
 
 **Eg: Name: Win_Server.**
  Add this host details in **variable:**
