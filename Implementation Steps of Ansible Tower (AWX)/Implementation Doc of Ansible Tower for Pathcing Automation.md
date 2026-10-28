@@ -70,6 +70,7 @@ ansible_winrm_server_cert_validation: ignore
 ### Step 3).After adding the Host details into the Inventory section. Now we need to add the worker Node credentials to AWX(Ansible Tower).
 Go to AWX ⇒ Resources ⇒ Credentials ⇒ Click on Add
 After clicking on Add you have to fill the below fields.
+
 **Name:** 
 **Description**:
 **Organization**: You can add your own created Organization or you can go with Default also.
