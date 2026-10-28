@@ -60,25 +60,30 @@ echo 'export KUBECONFIG=~/.kube/config' >> ~/.bashrc
 ```bash
 source ~/.bashrc
 ```
-4.Verify Kubernetes Cluster
+### Step 4.Verify Kubernetes Cluster
+```bash
 kubectl version
 kubectl get nodes
 kubectl get pods -A (To check all pods)
 Kubectl cluster-info
-
+```
 
 ### Step 5.Create AWX Namespace 
-- kubectl create namespace awx
-
+```bash
+kubectl create namespace awx
+```
 **To verify:**
-- kubectl get namespace awx
-
+```bash
+kubectl get namespace awx
+```
 ### Step 6.Create AWX Kustomization Directory
-- mkdir -p ~/awx-deployment cd ~/awx-deployment 
-
+```bash
+mkdir -p ~/awx-deployment cd ~/awx-deployment 
+```
 **To Verify:** 
-- pwd
-
+```bash
+pwd
+```
 ### Step 7: Create `kustomization.yaml`
 
 Create the `kustomization.yaml` file:
@@ -106,8 +111,9 @@ images:
     newTag: v0.15.0
 ```
 **Verify Kustomization:**
-- kubectl kustomize .
-  
+```bash
+kubectl kustomize .
+```  
 (This should generate Kubernetes manifests. If you get YAML/output instead of an error, the Kustomization is valid.)
 
 
@@ -117,8 +123,9 @@ images:
 kubectl apply -k .
 ```
 ### Step 9.Verify Operator is Running
-- kubectl get pods -n awx
-
+```bash
+kubectl get pods -n awx
+```
 ### Step 10.Create AWX Instance. Create a file named `awx-demo.yaml`
 
 ```bash
@@ -166,33 +173,42 @@ kubectl apply -k .
 ```
 
 ### Step 13. Check POD Status
-- kubectl get awx -n awx 
-- kubectl get pods -n awx    or 
-- kubectl get pods -n awx -w 
-- kubectl get all -n awx
-
+```bash
+kubectl get awx -n awx 
+kubectl get pods -n awx    or 
+kubectl get pods -n awx -w 
+kubectl get all -n awx
+```
 **To Check Operator Deployment** 
-- kubectl get deployment -n awx
-- kubectl get deployment awx-operator-controller-manager -n awx
-- kubectl get pods -n awx -o wide 
-
+```bash
+kubectl get deployment -n awx
+kubectl get deployment awx-operator-controller-manager -n awx
+kubectl get pods -n awx -o wide 
+```
 ### Step 14. View Logs
-- kubectl logs -f deployment/awx-operator-controller-manager -c awx-manager -n awx
-
+```bash
+kubectl logs -f deployment/awx-operator-controller-manager -c awx-manager -n awx
+```
 **To check Services:**
-- kubectl get svc -n awx 
-
+```bash
+kubectl get svc -n awx 
+```
 ### Step 15. Get the AWX admin password 
 First check the secret: 
-- kubectl get secrets -n awx 
+```bash
+kubectl get secrets -n awx 
+```
 Then, if the secret is `awx-demo-admin-password:`
 
 **Retrieve Admin Password**
-- kubectl get secret awx-demo-admin-password -n awx -o jsonpath="{.data.password}" | base64 --decode 
- 
+```bash
+kubectl get secret awx-demo-admin-password -n awx -o jsonpath="{.data.password}" | base64 --decode 
+``` 
 ### Step 16. Access the AWX Dashboard
-- http://your-server-ip:32000
- 
-- Username: admin
-- Password: (from previous step)
-
+```bash
+http://your-server-ip:32000
+```
+```bash
+Username: admin
+Password: (from previous step)
+```
