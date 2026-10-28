@@ -125,4 +125,29 @@ spec:
   service_type: NodePort
   nodeport_port: 32000
 ```
+### Step 11.Add Instance to Kustomization
+ Update your kustomization.yaml to include `awx-demo.yaml`
+
+```bash
+vim kustomization.yaml
+```
+#add - `awx-demo.yaml` under resources
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: awx
+
+resources:
+  - github.com/ansible/awx-operator/config/default?ref=2.19.1
+  - awx-demo.yaml
+
+images:
+  - name: quay.io/ansible/awx-operator
+    newTag: 2.19.1
+
+  - name: gcr.io/kubebuilder/kube-rbac-proxy:v0.15.0
+    newName: registry.k8s.io/kubebuilder/kube-rbac-proxy
+    newTag: v0.15.0
+```
 
