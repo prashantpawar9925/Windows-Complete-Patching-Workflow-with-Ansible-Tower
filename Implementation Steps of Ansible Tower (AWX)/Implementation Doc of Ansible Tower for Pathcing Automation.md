@@ -132,6 +132,8 @@ Go to **AWX ⇒ Resources ⇒ Templates ⇒ Click on Add job template**.(to crea
 
 - After Save just click on **Launch**.
 
+![Launch](https://github.com/user-attachments/assets/1feb26cd-5b0d-402a-bd86-e0a98422b0f0)
+
 ### Step 6). To create a Workflow job template:
 **Workflow Job Template**: 
 *(A graphical workflow that connects multiple job templates, allowing you to control execution order and define what happens when a job succeeds or fails.)*
