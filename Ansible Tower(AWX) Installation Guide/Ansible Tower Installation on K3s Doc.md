@@ -4,7 +4,8 @@
 ## Prerequisites:
 - 4vCPU
 - 8GB RAM
-  
+
+## Follow below provided steps ##
 **1.To Update Your System**
 - sudo apt-get update 
 - sudo apt-get upgrade -y
