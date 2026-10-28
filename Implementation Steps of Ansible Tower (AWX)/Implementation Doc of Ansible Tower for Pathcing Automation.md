@@ -56,3 +56,29 @@ ansible_host: 172.31.3.199  (Linux server private ip)
 ansible_connection: ssh
 ansible_python_interpreter: /usr/bin/python3
 ```
+
+**Eg: Name: Win_Server.**
+ Add this host details in **variable:**
+ ```bash
+ansible_host: 172.31.13.30  (Windows server private ip)
+ansible_connection: winrm
+ansible_port: 5985
+ansible_winrm_transport: ntlm
+ansible_winrm_server_cert_validation: ignore
+```
+
+### Step 3).After adding the Host details into the Inventory section. Now we need to add the worker Node credentials to AWX(Ansible Tower).
+Go to AWX ⇒ Resources ⇒ Credentials ⇒ Click on Add
+After clicking on Add you have to fill the below fields.
+**Name:** 
+**Description**:
+**Organization**: You can add your own created Organization or you can go with Default also.
+**Credential Type**: Machine
+**Username**: Enter the user name here eg: ubuntu
+**Password**: 
+Or **SSH Private key**:  
+**Privilege Escalation Method**: sudo ( only for Linux machine you can added here )
+**Note**: when you add linux machine credentials then you can use SSH Private key and when you use Windows machine then you can go with Password
+
+
+
