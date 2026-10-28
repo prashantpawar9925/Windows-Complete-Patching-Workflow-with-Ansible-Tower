@@ -71,14 +71,22 @@ ansible_winrm_server_cert_validation: ignore
 Go to AWX ⇒ Resources ⇒ Credentials ⇒ Click on Add
 After clicking on Add you have to fill the below fields.
 
-**Name:** 
+**Name**:
+
 **Description**:
+
 **Organization**: You can add your own created Organization or you can go with Default also.
+
 **Credential Type**: Machine
+
 **Username**: Enter the user name here eg: ubuntu
+
 **Password**: 
+
 Or **SSH Private key**:  
+
 **Privilege Escalation Method**: sudo ( only for Linux machine you can added here )
+
 **Note**: when you add linux machine credentials then you can use SSH Private key and when you use Windows machine then you can go with Password
 
 
