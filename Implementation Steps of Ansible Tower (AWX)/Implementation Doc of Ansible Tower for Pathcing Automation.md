@@ -155,7 +155,11 @@ After clicking Enter the required fields:
   
 After clicking on **Save**. you will get the prompt to click on Start to add the Nodes.
 
+![Prompt](https://github.com/user-attachments/assets/3edc1e48-544f-4929-9480-85c38ab82ebb)
+
 After clicking on **Start**
+
+![start](https://github.com/user-attachments/assets/0e88b1f6-75cb-4c05-b2c4-646953d13c77)
 
 Enter the following information fields:
 
@@ -165,16 +169,23 @@ Enter the following information fields:
   
 - Click on **Save**.
 
+![save](https://github.com/user-attachments/assets/68662f4c-b6da-4f0a-adbf-0add9ab82caa)
 
 After clicking on **Save** Option. you will get the **Visualizer** prompt
 
+![visualizer](https://github.com/user-attachments/assets/1abd0627-1497-4667-93f6-e3463880ede7)
+
 After this if we want to **add multiple Nodes (job template)** click on **Plus Icon ( + )** to add a **new node**.
+
+![add multiple nodes](https://github.com/user-attachments/assets/d4a60828-bb84-41fb-8082-52e6a64fd4fc)
 
 After clicking **+ Icon** to create a new node.
 
 - Select On **Success**
   
 - Click on **Next**
+
+![Icon](https://github.com/user-attachments/assets/e4910eb6-ea44-422a-ad49-0c4f73d530bf)
 
 After clicking on **Next** option. Again we have to add **nodes (job template)**
 
@@ -184,6 +195,10 @@ After clicking on **Next** option. Again we have to add **nodes (job template)**
   
 - Click on **Save**.
 
+![job template](https://github.com/user-attachments/assets/f7dc4d26-60fb-4db5-9fba-750a9e97a5fe)
+
 After clicking on **Save** option you will get the same **visualizer prompt** it will add a **new node (job template)** in below SS.
+
+![new node](https://github.com/user-attachments/assets/29941e51-2d2c-4493-9b43-fe9d91d23074)
 
 Again if you want a **new node (job template)** to add. follow the same steps from above.
