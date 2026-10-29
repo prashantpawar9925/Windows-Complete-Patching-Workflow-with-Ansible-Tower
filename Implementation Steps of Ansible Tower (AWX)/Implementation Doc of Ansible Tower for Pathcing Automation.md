@@ -1,5 +1,5 @@
 # **Implementation Steps of Ansible Tower (AWX) for Patching Automation:**
-## To Added Worker Node (Win & Linux )  to AWX( Ansible Tower)
+## To Added Worker Node (Win & Linux ) to AWX( Ansible Tower)
 **ON LINUX SERVER**
 
 **First you have to create key pair on AWX (Ansible Tower) Server**
@@ -90,7 +90,7 @@ After clicking on Add you have to fill the below fields.
 
 - **Privilege Escalation Method**: sudo ( only for Linux machine you can added here )
 
-- **Note**: when you add linux machine credentials then you can use SSH Private key and when you use Windows machine then you can go with Password
+- ##Note: when you add linux machine credentials then you can use SSH Private key and when you use Windows machine then you can go with Password
 
 ### Step 4).How to add the Project into AWX(Ansible Tower)
 Go to **AWX ⇒ Projects ⇒ click on Add** (to create new project)
