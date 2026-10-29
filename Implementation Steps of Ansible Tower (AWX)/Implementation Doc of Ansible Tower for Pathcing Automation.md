@@ -26,7 +26,7 @@ chmod 700 ~/.ssh/authorized_keys
 ```bash
 ssh ubuntu@ip_of_worker_node.
 ```
-## Below are the Provided Steps to perform on Ansible Tower/AWX UI.
+## Below are the Provided Steps to Perform on Ansible Tower/AWX UI.
 ### Step 1).To Create Organization: 
 - Go to AWX ⇒ Access ⇒ Organization ⇒ click on Add .
 - Enter the following details to create a new organization.
