@@ -65,3 +65,11 @@ The patching process follows these stages:
 ## **Architecture Diagram**:
 
 ![Architecture Diagram](https://github.com/user-attachments/assets/d080155f-2045-4ef1-bd9a-1fc144ba6f6d)
+
+## **Ansible Tower(AWX) Installation Guide**
+
+[Installation Guide](https://github.com/prashantpawar9925/Windows-Complete-Patching-Workflow-with-Ansible-Tower/tree/main/Ansible%20Tower%28AWX%29%20Installation%20Guide)
+
+## **Implementation Steps of Ansible Tower (AWX)**
+
+[Implementation Guide](https://github.com/prashantpawar9925/Windows-Complete-Patching-Workflow-with-Ansible-Tower/tree/main/Implementation%20Steps%20of%20Ansible%20Tower%20(AWX))
