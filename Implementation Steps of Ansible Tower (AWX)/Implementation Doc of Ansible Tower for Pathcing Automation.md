@@ -53,7 +53,7 @@ Under the Hosts you can add the host details of each server.
 
 Add this host details in **variables**:
 ```bash
-ansible_host: 172.31.3.199  (Linux server private ip)
+ansible_host: 172.31.3.199  #(Linux server private ip)
 ansible_connection: ssh
 ansible_python_interpreter: /usr/bin/python3
 ```
