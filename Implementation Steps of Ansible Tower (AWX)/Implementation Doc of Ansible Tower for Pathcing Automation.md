@@ -28,7 +28,7 @@ ssh ubuntu@ip_of_worker_node.
 ```
 ## Below are the Provided Steps to Perform on Ansible Tower/AWX UI.
 ### Step 1).To Create Organization: 
-- Go to AWX ⇒ Access ⇒ Organization ⇒ click on Add .
+- Go to **AWX ⇒ Access ⇒ Organization ⇒ click on Add** .
 - Enter the following details to create a new organization.
 - **Name**: AWX_Organization
 - **Description**: 
@@ -36,7 +36,7 @@ ssh ubuntu@ip_of_worker_node.
 
 After this you have to add the credentials on **AWX (Ansible Tower)** UI.
 ### Step 2).To Add the Inventory on AWX:
-Go to AWX ⇒ Resources ⇒ Inventories ⇒ click on Add Inventory.
+Go to **AWX ⇒ Resources ⇒ Inventories ⇒ click on Add Inventory**.
 Under Inventory fill the below fields.
 - **Name**: Windows-Linux_Server
 - **Description**: 
