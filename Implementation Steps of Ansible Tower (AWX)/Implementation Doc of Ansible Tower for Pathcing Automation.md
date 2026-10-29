@@ -34,7 +34,7 @@ ssh ubuntu@ip_of_worker_node.
 - **Description**: 
 - **Galaxy Credentials**: keep it default 
 
-After this you have to add the credentials on AWX (Ansible Tower) UI.
+After this you have to add the credentials on **AWX (Ansible Tower)** UI.
 ### Step 2).To Add the Inventory on AWX:
 Go to AWX ⇒ Resources ⇒ Inventories ⇒ click on Add Inventory.
 Under Inventory fill the below fields.
