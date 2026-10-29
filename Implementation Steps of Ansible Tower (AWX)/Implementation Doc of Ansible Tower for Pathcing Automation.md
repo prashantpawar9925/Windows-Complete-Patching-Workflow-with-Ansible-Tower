@@ -50,8 +50,8 @@ Go to **Hosts**
 Under the Hosts you can add the host details of each server.
 
 **Eg: Name: Linux_Server** 
+Add this host details in **variables**:
 ```bash
-Add this host details in variables:
 ansible_host: 172.31.3.199  (Linux server private ip)
 ansible_connection: ssh
 ansible_python_interpreter: /usr/bin/python3
