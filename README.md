@@ -68,8 +68,8 @@ The patching process follows these stages:
 
 ## **Ansible Tower(AWX) Installation Guide**
 
-[Installation Guide](https://github.com/prashantpawar9925/Windows-Complete-Patching-Workflow-with-Ansible-Tower/tree/main/Ansible%20Tower%28AWX%29%20Installation%20Guide)
+[Ansible Tower Installation Guide]([https://github.com/prashantpawar9925/Windows-Complete-Patching-Workflow-with-Ansible-Tower/tree/main/Ansible%20Tower%28AWX%29%20Installation%20Guide](https://github.com/prashantpawar9925/Windows-Complete-Patching-Workflow-with-Ansible-Tower/blob/main/Ansible%20Tower(AWX)%20Installation%20Guide/Ansible%20Tower%20Installation%20on%20K3s%20Doc.md))
 
 ## **Implementation Steps of Ansible Tower (AWX)**
 
-[Implementation Guide](https://github.com/prashantpawar9925/Windows-Complete-Patching-Workflow-with-Ansible-Tower/tree/main/Implementation%20Steps%20of%20Ansible%20Tower%20(AWX))
+[Implementation Steps Guide]([https://github.com/prashantpawar9925/Windows-Complete-Patching-Workflow-with-Ansible-Tower/tree/main/Implementation%20Steps%20of%20Ansible%20Tower%20(AWX)](https://github.com/prashantpawar9925/Windows-Complete-Patching-Workflow-with-Ansible-Tower/blob/main/Implementation%20Steps%20of%20Ansible%20Tower%20(AWX)/Implementation%20Doc%20of%20Ansible%20Tower%20for%20Pathcing%20Automation.md))
