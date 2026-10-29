@@ -157,7 +157,7 @@ After clicking Enter the required fields:
   
 - Click on **Save**.
   
-After clicking on **Save**. you will get the prompt to click on Start to add the Nodes.
+After clicking on **Save**. you will get the prompt to click on **Start** to add the Nodes.
 
 ![Prompt](https://github.com/user-attachments/assets/3edc1e48-544f-4929-9480-85c38ab82ebb)
 
