@@ -63,7 +63,7 @@ ansible_python_interpreter: /usr/bin/python3
 
  Add this host details in **variable:**
  ```bash
-ansible_host: 172.31.13.30  (Windows server private ip)
+ansible_host: 172.31.13.30  #(Windows server private ip)
 ansible_connection: winrm
 ansible_port: 5985
 ansible_winrm_transport: ntlm
@@ -93,7 +93,7 @@ After clicking on Add you have to fill the below fields.
 - **Note**: when you add linux machine credentials then you can use SSH Private key and when you use Windows machine then you can go with Password
 
 ### Step 4).How to add the Project into AWX(Ansible Tower)
-Go to AWX ⇒ Projects ⇒ click on Add (to create new project)
+Go to **AWX ⇒ Projects ⇒ click on Add** (to create new project)
 
 **After clicking Enter the required fields below**
 - **Name**:
