@@ -95,7 +95,7 @@ After clicking on Add you have to fill the below fields.
 ### Step 4).How to add the Project into AWX(Ansible Tower)
 Go to **AWX ⇒ Projects ⇒ click on Add** (to create new project)
 
-**After clicking Enter the required fields below**
+After clicking Enter the required fields below
 - **Name**:
 - **Description**:
 - **Organization**:
