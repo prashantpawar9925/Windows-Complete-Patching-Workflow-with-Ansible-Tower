@@ -71,7 +71,8 @@ ansible_winrm_server_cert_validation: ignore
 ```
 
 ### Step 3).After adding the Host details into the Inventory section. Now we need to add the worker Node credentials to AWX(Ansible Tower).
-Go to AWX ⇒ Resources ⇒ Credentials ⇒ Click on Add
+Go to **AWX ⇒ Resources ⇒ Credentials ⇒ Click on Add**
+
 After clicking on Add you have to fill the below fields.
 
 - **Name**:
@@ -106,7 +107,8 @@ After clicking Enter the required fields below
 
 ![Synch](https://github.com/user-attachments/assets/f83f1198-ee1e-45ef-992b-a7ca088643eb)
 
-**After adding the Project into the AWX(Ansible Tower)** , 
+*After adding the Project into the AWX(Ansible Tower)* , 
+
 ### Step 5).To create a Job template to run the Job.
 **Job Template**:
 *(A configuration for running an individual Ansible playbook against a selected inventory, using credentials and other execution settings.)
@@ -114,7 +116,7 @@ Example: Run the Linux pre-check playbook.*
 
 Go to **AWX ⇒ Resources ⇒ Templates ⇒ Click on Add job template**.(to create New job template)
 
-**After clicking Enter the Required fields below:**
+After clicking Enter the Required fields below:
 
 - **Name**:
 
