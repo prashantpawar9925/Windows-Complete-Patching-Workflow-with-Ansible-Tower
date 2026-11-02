@@ -2,6 +2,7 @@
 ***K3s***: K3s is a light-weight kubernetes distribution. K3s is developed by Rancher Labs. It can be used as a single node in a cluster.
 
 ## Prerequisites:
+- Ubuntu 24.04 LTS
 - 4vCPU
 - 8GB RAM
 
